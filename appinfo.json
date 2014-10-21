@@ -1,0 +1,17 @@
+{
+  "uuid": "e947f64a-ac97-4787-8854-98d0883abad1",
+  "shortName": "pebble-leaf",
+  "longName": "pebble-leaf",
+  "companyName": "ShameronStudios",
+  "versionCode": 1,
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
