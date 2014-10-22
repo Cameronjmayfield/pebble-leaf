@@ -1,9 +1,18 @@
 #include <pebble.h>
 
 static Window *window;
-static TextLayer *text_layer;
+static TextLayer *hvac_label;
+static TextLayer *update_label;
 
-static void select_click_handler(ClickRecognizerRef recognizer, void *context) {  
+static BitmapLayer *image_layer;
+
+static GBitmap *image;
+
+static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
+
+}
+
+static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
   Tuplet value = TupletInteger(0, 1);
 
   DictionaryIterator *iter;
@@ -19,12 +28,20 @@ static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   app_message_outbox_send();
 }
 
-static void up_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Up");
-}
-
 static void down_click_handler(ClickRecognizerRef recognizer, void *context) {
-  text_layer_set_text(text_layer, "Down");
+  Tuplet value = TupletInteger(1, 1);
+
+  DictionaryIterator *iter;
+  app_message_outbox_begin(&iter);
+
+  if (iter == NULL) {
+    return;
+  }
+
+  dict_write_tuplet(iter, &value);
+  dict_write_end(iter);
+
+  app_message_outbox_send();
 }
 
 static void click_config_provider(void *context) {
@@ -35,20 +52,36 @@ static void click_config_provider(void *context) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
-  GRect bounds = layer_get_bounds(window_layer);
+  // GRect bounds = layer_get_bounds(window_layer);
 
-  text_layer = text_layer_create((GRect) { .origin = { 0, 72 }, .size = { bounds.size.w, 20 } });
-  text_layer_set_text(text_layer, "Press a button");
-  text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
-  layer_add_child(window_layer, text_layer_get_layer(text_layer));
+  GRect bounds = layer_get_frame(window_layer);
+
+  image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_NO_LITTER);
+  image_layer = bitmap_layer_create(bounds);
+  bitmap_layer_set_bitmap(image_layer, image);
+  bitmap_layer_set_alignment(image_layer, GAlignCenter);
+  layer_add_child(window_layer, bitmap_layer_get_layer(image_layer));
+
+
+  hvac_label = text_layer_create((GRect) { .origin = { 0, 10 }, .size = { bounds.size.w, 20 } });
+  text_layer_set_text(hvac_label, "Start HVAC");
+  text_layer_set_text_alignment(hvac_label, GTextAlignmentRight);
+  layer_add_child(window_layer, text_layer_get_layer(hvac_label));
+
+  update_label = text_layer_create((GRect) { .origin = { 0, 124 }, .size = { bounds.size.w, 20 } });
+  text_layer_set_text(update_label, "Request Update");
+  text_layer_set_text_alignment(update_label, GTextAlignmentRight);
+  layer_add_child(window_layer, text_layer_get_layer(update_label));
+
 }
 
 static void window_unload(Window *window) {
-  text_layer_destroy(text_layer);
+  text_layer_destroy(hvac_label);
+  text_layer_destroy(update_label);
 }
 
  void out_sent_handler(DictionaryIterator *sent, void *context) {
-   text_layer_set_text(text_layer, "HVAC Started");
+  //  text_layer_set_text(text_layer, "HVAC Started");
  }
 
 
@@ -58,7 +91,7 @@ static void window_unload(Window *window) {
 
 
  void in_received_handler(DictionaryIterator *received, void *context) {
-   
+
  }
 
 
@@ -82,6 +115,9 @@ static void window_unload(Window *window) {
 }
 
 static void deinit(void) {
+  gbitmap_destroy(image);
+
+  bitmap_layer_destroy(image_layer);
   window_destroy(window);
 }
 
@@ -91,5 +127,6 @@ int main(void) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
 
   app_event_loop();
+
   deinit();
 }

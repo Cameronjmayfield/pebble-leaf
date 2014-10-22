@@ -12,6 +12,12 @@
     "dummy": 0
   },
   "resources": {
-    "media": []
+    "media": [
+        {
+          "type": "png",
+          "name": "IMAGE_NO_LITTER",
+          "file": "images/no_litter.png"
+        }
+    ]
   }
 }
